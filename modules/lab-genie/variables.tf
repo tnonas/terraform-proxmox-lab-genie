@@ -8,6 +8,12 @@ variable "node_name" {
   type        = string
 }
 
+variable "pool" {
+  description = "Proxmox resource pool"
+  type = string
+  default = ""
+}
+
 variable "virtual_machines" {
   description = "VMs created based on prepared templates"
   type = map(object({

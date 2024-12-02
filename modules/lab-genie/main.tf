@@ -1,4 +1,20 @@
+# Create PVE pools
+## Get IDs of the existing pools and create new pools if not existent
+data "proxmox_virtual_environment_pools" "existing_pools" {}
+## Record all existing pool IDs as local variable
+locals {
+  existing_pools = data.proxmox_virtual_environment_pools.existing_pools.pool_ids
+}
+## Create pool ID which do not exist
+resource "proxmox_virtual_environment_pool" "this" {
+  # Loop over var.virtual_machines entries containing only pool ID which is not part of existing pool IDs
+  for_each = {for k, v in var.virtual_machines : k => v if contains(local.existing_pools, v.pool_id) == false}
+  pool_id = each.value.pool_id
+}
+
+# Generate VMs
 resource "proxmox_virtual_environment_vm" "this" {
+  depends_on = [proxmox_virtual_environment_pool.this]
   for_each  = var.virtual_machines
   node_name = var.node_name
   # Provide clone source template or VM details
@@ -25,5 +41,4 @@ resource "proxmox_virtual_environment_vm" "this" {
       vlan_id      = network_device.value.vlan_id
     }
   }
-
 }

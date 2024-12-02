@@ -1,0 +1,31 @@
+---
+# This is a sample YAML lab configuration file
+pve:
+  server: "https://proxmox-mob.nonas.eu:8006/" # Address or IP with port used to access PVE
+  node: proxmox-mob # Proxmox node hosting lab topology as named in PVE Datacenter
+lab:
+  name: test-lab # This will create / use PVE pool and deploy all devices in it
+  tags: ["tf", "test-lab"] # Global tags applied to all devices
+devices:
+- type: vm # Define device type (vm or container)
+  template: 9010 # ID of vm/container source template
+  name: tf-test-vm1
+  tags: ["router"] # Additional tags applied only to this device
+  nics: # Definition of network interfaces. This will override networking coming from the template.
+    net0: # The name of the network interfaces is irrelevant, but the order defines PVE network interfaces IDs
+      network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+      vlan_id: 9 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+    net1:
+      network: lab6
+      vlan_id: 10
+- type: vm
+  template: 9011
+  name: tf-test-vm2
+  tags: ["firewall"]
+  nics:
+    net0:
+      network: oob
+      vlan_id: 11
+    net1:
+      network: lab6
+      vlan_id: 12
