@@ -4,6 +4,10 @@ terraform {
       source  = "registry.terraform.io/bpg/proxmox"
       version = "0.68.0"
     }
+    jinja = {
+      source = "NikolaLohinski/jinja"
+      version = "2.4.2"
+    }
   }
 }
 
@@ -18,4 +22,18 @@ provider "proxmox" {
   #   # username = "" # Not used explicitly here, taken from PROXMOX_VE_SSH_USERNAME environment variable.
   #   # private_key = file("~/.ssh/id_rsa") # Not used explicitly here, taken from PROXMOX_VE_SSH_PRIVATE_KEY environment variable.
   # }
+}
+
+provider "jinja" {
+  delimiters {
+    variable_start = "{{"
+    variable_end   = "}}"
+    block_start    = "{%"
+    block_end      = "%}"
+    comment_start  = "{#"
+    comment_end    = "#}"
+  }
+  strict_undefined  = false
+  left_strip_blocks = false
+  trim_blocks       = false
 }

@@ -1,5 +1,6 @@
 # Custom
 /.idea
+/.venv
 
 # Local .terraform directories
 **/.terraform/*

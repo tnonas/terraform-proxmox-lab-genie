@@ -1,6 +1,29 @@
 # This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
+provider "registry.opentofu.org/nikolalohinski/jinja" {
+  version     = "2.4.2"
+  constraints = "2.4.2"
+  hashes = [
+    "h1:FEu9ckCIZxOL8mL0mQfxw4PrfiIedibprPrru3cc8+c=",
+    "zh:10c7fa79a03dbab222a59d27da972b3a1d68666f5812db5929803406efcf6f58",
+    "zh:11bb57fe1cf376d45e0ef9a533e0c2053c990a64eea4550ffe736d52b1825812",
+    "zh:1460e847d77007ec373d0923703577a4448fd80f5cfd0933b294832f2f982248",
+    "zh:5d9cd02ad4526778fca3e5cf25f36279e021afc3288ffe27955d3587becfd876",
+    "zh:712b0fbecaf0c2945dd31cb516bdfc22cc395114bc2a1f2a983388ea46cba9b3",
+    "zh:7304d4933cd6f1b9cdcd17b73f7c83bf5de0ef7e5564974a73ef461ea9dc8529",
+    "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
+    "zh:7e26d1673321de23a0f2c6ff9a8cae4e9644618d7c3974e03f2f32a9a47178d9",
+    "zh:8a8c08903ca9503040da72fc91de410f0acf6cbe97804cd2f06e6530d8613c16",
+    "zh:8f1e196f680ad9ff0ab4d72a9c66002c39a66e74f1fd0fa8c3a26c4e5260bbb0",
+    "zh:8fe5b78c96a5a9e6391dca6670421e837bcf848481fe017bd167f7747e698f35",
+    "zh:c9255a6ca48332d7dc533a5013fd2bd89456a4690302a000fad69a5a001297c4",
+    "zh:ca3a1b429e0647a65489973d22576ac536e5ddebae29cc03c1a3e94996932503",
+    "zh:e0de6f4b2c761525530695c801f7268acba43fdc5942a4838f77b4ba7dc70e4e",
+    "zh:f2035ea6d3723c8a8030557e7e7b80ea81288c353ff3deb374b9c4e6be29e5c5",
+  ]
+}
+
 provider "registry.terraform.io/bpg/proxmox" {
   version     = "0.68.0"
   constraints = "0.68.0"

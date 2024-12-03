@@ -5,11 +5,16 @@ data "proxmox_virtual_environment_pools" "existing_pools" {}
 locals {
   existing_pools = data.proxmox_virtual_environment_pools.existing_pools.pool_ids
 }
-## Create pool ID which do not exist
+# Create pool ID which do not exist
+# resource "proxmox_virtual_environment_pool" "this" {
+#   # Loop over var.virtual_machines entries containing only pool ID which is not part of existing pool IDs
+#   for_each = {for k, v in var.virtual_machines : k => v if contains(local.existing_pools, v.pool_id) == false}
+#   pool_id = each.value.pool_id
+# }
 resource "proxmox_virtual_environment_pool" "this" {
   # Loop over var.virtual_machines entries containing only pool ID which is not part of existing pool IDs
-  for_each = {for k, v in var.virtual_machines : k => v if contains(local.existing_pools, v.pool_id) == false}
-  pool_id = each.value.pool_id
+  for_each = {for k, v in var.pools : k => v if contains(local.existing_pools, v.name) == false}
+  pool_id = each.value.name
 }
 
 # Generate VMs
