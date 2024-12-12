@@ -1,0 +1,86 @@
+---
+# This is a sample YAML lab configuration file
+pve:
+  server: "https://proxmox-mob.nonas.eu:8006/" # Address or IP with port used to access PVE
+  node: proxmox-mob # Proxmox node hosting lab topology as named in PVE Datacenter
+
+lab:
+  name: test-lab # This will create / use PVE pool and deploy all devices in it
+  tags: [ "tf", "test-lab" ] # Global tags applied to all devices
+  template: 9010 # Default template for all devices in the lab. Can be overridden on device level.
+  container_password: Juniper123
+
+  vms:
+    - type: vm # Define device type (vm or container)
+      template: # ID of vm/container source template. If omitted or left blank lab level template will be used
+      name: tf-test-vm1
+      id: 105 # PVE VM ID
+      tags: ["router"] # Additional tags applied only to this device
+      nics: # Definition of network interfaces. This will override networking coming from the template.
+        net0: # The name of the network interfaces is irrelevant, but the order defines PVE network interfaces IDs
+          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 9 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+        net1:
+          network: lab6
+          vlan_id: 10
+    - type: vm
+      template: 9011
+      name: tf-test-vm2
+      id: 108
+      tags: ["firewall"]
+      nics:
+        net0:
+          network: oob
+          vlan_id: 11
+        net1:
+          network: lab6
+          vlan_id: 12
+
+  containers:
+    - hostname: ct-test-1
+      vm_id: 109
+      started: false
+      tags: ["pcs", "pc-1"]
+      datastore_id: local-lvm
+      template_file_id: local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst
+      type: debian
+      nics: # Definition of network interfaces.
+        net0: # The name of the network interfaces is irrelevant here, but the order defines PVE network interfaces IDs
+          name: eth0
+          network: oob # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 11 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+        net1:
+          name: eth1
+          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 0 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+      ip_configs:
+        net0:
+          ipv4:
+            address: dhcp
+        net1:
+          ipv4:
+            address: "10.0.0.1/24"
+            gateway: "10.0.0.254"
+    - hostname: ct-test-2
+      vm_id: 110
+      started: false
+      tags: ["pcs", "pc-2"]
+      datastore_id: local-lvm
+      template_file_id: local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst
+      type: ubuntu
+      nics: # Definition of network interfaces.
+        net0: # The name of the network interfaces is irrelevant here, but the order defines PVE network interfaces IDs
+          name: eth0
+          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 0 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+        net1:
+          name: eth1
+          network: temp # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 12 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+      ip_configs:
+        net0:
+          ipv4:
+            address: dhcp
+        net1:
+          ipv4:
+            address: "11.0.0.1/24"

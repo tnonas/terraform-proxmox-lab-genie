@@ -1,0 +1,81 @@
+# The address of Proxmox API
+endpoint = "{{ pve["server"] }}"
+
+# Proxmox node hosting lab topology as named in PVE Datacenter
+node_name = "{{ pve["node"] }}"
+
+# PVE pools to be created
+pools = {
+  "{{ lab["name"] }}" = {name = "{{ lab["name"] }}"}
+}
+
+# VMs created based on prepared templates
+virtual_machines = {
+  {%- for vm in lab["vms"] %}
+  {%- if vm["type"] == 'vm' %}
+  {{ vm["name"] }} = {
+    clone = {
+      {% if vm["template"] %}vm_id = {{ vm["template"] }}{% else %}vm_id = {{ lab["template"] }}{% endif %}
+      full  = true
+    }
+    name            = "{{ vm["name"] }}"
+    vm_id           = {{ vm["id"] }}
+    started         = false
+    on_boot         = false
+    stop_on_destroy = false # Whether to stop instead of shutdown during tf destroy
+    pool_id         = "{{ lab["name"] }}" # If the ID does not exist it will be created
+    {% set all_tags = lab["tags"] + vm["tags"] -%}
+    tags            = {{ all_tags | tojson }} # | tojson is used to preserve double quotes
+    # hook_script_file_id = "" # Hookscript filename
+    network_devices = {
+      {%- for key, value in vm["nics"].items() %}
+      {{ key }} = {
+        bridge       = "{{ value["network"] }}" # Bridge ID must already exist
+        disconnected = false
+        vlan_id      = {{ value["vlan_id"] }}
+      }
+      {%- endfor %}
+    }
+  }
+  {%- endif %}
+  {%- endfor %}
+}
+
+# Containers created based on locally downloaded container templates
+containers = {
+  {%- for container in lab["containers"] %}
+  {{ container["hostname"] }} = {
+    hostname         = "{{ container["hostname"] }}"
+    password         = "{{ lab["container_password"] }}"
+    vm_id            = {{ container["vm_id"] }}
+    started          = false
+    start_on_boot  = false
+    pool_id          = "{{ lab["name"] }}"
+    {% set all_tags = lab["tags"] + container["tags"] -%}
+    tags = {{ all_tags | tojson }}
+    datastore_id     = "{{ container["datastore_id"] }}"
+    template_file_id = "{{ container["template_file_id"] }}"
+    type             = "{{ container["type"] }}"
+    network_interfaces = {
+      {%- for key, value in container["nics"].items() %}
+      {{ key }} = {
+        name         = "{{ value["name"] }}"
+        bridge       = "{{ value["network"] }}" # Bridge ID must already exist
+        enabled      = true
+        vlan_id      = {{ value["vlan_id"] }}
+      }
+      {%- endfor %}
+    }
+    ip_configs = {
+      {%- for key, value in container["ip_configs"].items() %}
+      {{ key }} = {
+        ipv4 = {
+          address = "{{ value.ipv4["address"] }}"
+          gateway = "{{ value.ipv4["gateway"] }}"
+        }
+      }
+      {%- endfor %}
+    }
+  }
+  {%- endfor %}
+}

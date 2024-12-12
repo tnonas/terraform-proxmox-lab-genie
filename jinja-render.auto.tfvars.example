@@ -1,0 +1,150 @@
+# The address of Proxmox API
+endpoint = "https://proxmox-mob.nonas.eu:8006/"
+
+# Proxmox node hosting lab topology as named in PVE Datacenter
+node_name = "proxmox-mob"
+
+# PVE pools to be created
+pools = {
+  "test-lab" = {name = "test-lab"}
+}
+
+# VMs created based on prepared templates
+virtual_machines = {
+  tf-test-vm1 = {
+    clone = {
+      vm_id = 9010
+      full  = true
+    }
+    name            = "tf-test-vm1"
+    vm_id           = 105
+    started         = false
+    on_boot         = false
+    stop_on_destroy = false # Whether to stop instead of shutdown during tf destroy
+    pool_id         = "test-lab" # If the ID does not exist it will be created
+    tags            = ["tf", "test-lab", "router"] # | tojson is used to preserve double quotes
+    # hook_script_file_id = "" # Hookscript filename
+    network_devices = {
+      net0 = {
+        bridge       = "vmbr0" # Bridge ID must already exist
+        disconnected = false
+        vlan_id      = 9
+      }
+      net1 = {
+        bridge       = "lab6" # Bridge ID must already exist
+        disconnected = false
+        vlan_id      = 10
+      }
+    }
+  }
+  tf-test-vm2 = {
+    clone = {
+      vm_id = 9011
+      full  = true
+    }
+    name            = "tf-test-vm2"
+    vm_id           = 108
+    started         = false
+    on_boot         = false
+    stop_on_destroy = false # Whether to stop instead of shutdown during tf destroy
+    pool_id         = "test-lab" # If the ID does not exist it will be created
+    tags            = ["tf", "test-lab", "firewall"] # | tojson is used to preserve double quotes
+    # hook_script_file_id = "" # Hookscript filename
+    network_devices = {
+      net0 = {
+        bridge       = "oob" # Bridge ID must already exist
+        disconnected = false
+        vlan_id      = 11
+      }
+      net1 = {
+        bridge       = "lab6" # Bridge ID must already exist
+        disconnected = false
+        vlan_id      = 12
+      }
+    }
+  }
+}
+
+# Containers created based on locally downloaded container templates
+containers = {
+  ct-test-1 = {
+    hostname         = "ct-test-1"
+    password         = "Juniper123"
+    vm_id            = 109
+    started          = false
+    start_on_boot  = false
+    pool_id          = "test-lab"
+    tags = ["tf", "test-lab", "pcs", "pc-1"]
+    datastore_id     = "local-lvm"
+    template_file_id = "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst"
+    type             = "debian"
+    network_interfaces = {
+      net0 = {
+        name         = "eth0"
+        bridge       = "oob" # Bridge ID must already exist
+        enabled      = true
+        vlan_id      = 11
+      }
+      net1 = {
+        name         = "eth1"
+        bridge       = "vmbr0" # Bridge ID must already exist
+        enabled      = true
+        vlan_id      = 0
+      }
+    }
+    ip_configs = {
+      net0 = {
+        ipv4 = {
+          address = "dhcp"
+          gateway = ""
+        }
+      }
+      net1 = {
+        ipv4 = {
+          address = "10.0.0.1/24"
+          gateway = "10.0.0.254"
+        }
+      }
+    }
+  }
+  ct-test-2 = {
+    hostname         = "ct-test-2"
+    password         = "Juniper123"
+    vm_id            = 110
+    started          = false
+    start_on_boot  = false
+    pool_id          = "test-lab"
+    tags = ["tf", "test-lab", "pcs", "pc-2"]
+    datastore_id     = "local-lvm"
+    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+    type             = "ubuntu"
+    network_interfaces = {
+      net0 = {
+        name         = "eth0"
+        bridge       = "vmbr0" # Bridge ID must already exist
+        enabled      = true
+        vlan_id      = 0
+      }
+      net1 = {
+        name         = "eth1"
+        bridge       = "temp" # Bridge ID must already exist
+        enabled      = true
+        vlan_id      = 12
+      }
+    }
+    ip_configs = {
+      net0 = {
+        ipv4 = {
+          address = "dhcp"
+          gateway = ""
+        }
+      }
+      net1 = {
+        ipv4 = {
+          address = "11.0.0.1/24"
+          gateway = ""
+        }
+      }
+    }
+  }
+}
