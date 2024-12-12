@@ -1,7 +1,6 @@
 # Custom
 /.idea
 /.venv
-/modules/jinja-render/
 *.tfvars.olde
 
 # Local .terraform directories
