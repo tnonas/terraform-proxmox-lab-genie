@@ -1,25 +1,25 @@
 ---
 # This is a sample YAML lab configuration file
 pve:
-  server: "https://proxmox-mob.nonas.eu:8006/" # Address or IP with port used to access PVE
-  node: proxmox-mob # Proxmox node hosting lab topology as named in PVE Datacenter
+  server: "https://proxmox-mob.nonas.eu:8006/"        # PVE URL/port or IP/port used for standard UI access
+  node: proxmox-mob                                   # PVE node name hosting lab topology as named in PVE Datacenter
 
 lab:
-  name: test-lab # This will create / use PVE pool and deploy all devices in it
-  tags: [ "tf", "test-lab" ] # Global tags applied to all devices
-  template: 9010 # Default template for all devices in the lab. Can be overridden on device level.
-  container_password: Juniper123
+  name: test-lab                                      # This will create a new or use and existing PVE pool and deploy all lab devices in it
+  tags: [ "tf", "test-lab" ]                          # Global tags applied to all devices. Can be combined with VM or container specific tags.
+  template: 9010                                      # Default template for all devices in the lab. Can be overridden on device level.
+  container_password: Juniper123                      # Password for console or ssh access to containers. Any VM specific credentials will be inherited from VM template.
 
-  vms:
-    - type: vm # Define device type (vm or container)
-      template: # ID of vm/container source template. If omitted or left blank lab level template will be used
-      name: tf-test-vm1
-      id: 105 # PVE VM ID
-      tags: ["router"] # Additional tags applied only to this device
-      nics: # Definition of network interfaces. This will override networking coming from the template.
-        net0: # The name of the network interfaces is irrelevant, but the order defines PVE network interfaces IDs
-          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
-          vlan_id: 9 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+  vms:                                                # Define lab VMs here
+    - type: vm                                        # (Obsolete! Containers will use their specific constructs, defined below) Define device type ("vm" or "container").
+      template:                                       # ID of VM source template. If omitted or left blank lab level template will be used.
+      name: tf-test-vm1                               # The name of the VM.
+      id: 105                                         # PVE VM ID to be assigned.
+      tags: [ "router" ]                              # Additional tags applied only to this VM. Will be combined with lab level tags.
+      nics:                                           # Definition of network interfaces. This will override all(!) networking configuration coming from the template.
+        net0:                                         # The name of the network interfaces is irrelevant, but the order defines PVE network interfaces IDs, i.e., the first NIC will become net0, the second net1, etc.
+          network: vmbr0                              # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 9                                  # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk interface.
         net1:
           network: lab6
           vlan_id: 10
@@ -27,7 +27,7 @@ lab:
       template: 9011
       name: tf-test-vm2
       id: 108
-      tags: ["firewall"]
+      tags: [ "firewall" ]
       nics:
         net0:
           network: oob
@@ -36,47 +36,47 @@ lab:
           network: lab6
           vlan_id: 12
 
-  containers:
-    - hostname: ct-test-1
-      vm_id: 109
-      started: false
-      tags: ["pcs", "pc-1"]
-      datastore_id: local-lvm
-      template_file_id: local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst
-      type: debian
-      nics: # Definition of network interfaces.
-        net0: # The name of the network interfaces is irrelevant here, but the order defines PVE network interfaces IDs
-          name: eth0
-          network: oob # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
-          vlan_id: 11 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+  containers:                                         # Define lab containers here
+    - hostname: ct-test-1                             # The name of the container.
+      vm_id: 109                                      # PVE container ID to be assigned.
+      started: false                                  # Whether container should be started after deployment.
+      tags: [ "pcs", "pc-1" ]                         # Additional tags applied only to this container. Will be combined with lab level tags.
+      datastore_id: local-lvm                         # Which PVE datastore will host container image.
+      template_file_id: local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst        # The container image to use
+      type: debian                                    # Container image type
+      nics:                                           # Definition of network interfaces.
+        net0:                                         # The name of the network interfaces is irrelevant here, but the order defines PVE network interfaces IDs for a given container.
+          name: eth0                                  # The name of the container NIC in the Linux layer.
+          network: oob                                # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
+          vlan_id: 11                                 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk interface.
         net1:
           name: eth1
-          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
-          vlan_id: 0 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
-      ip_configs:
+          network: vmbr0
+          vlan_id: 0
+      ip_configs:                                     # IP configuration for the specific container network interfaces. The order of IP configs must much the order of network interfaces defined above. The names bear no meaning, but are advised to match for easier understanding.
         net0:
           ipv4:
-            address: dhcp
+            address: dhcp                             # Use either "dhcp" or specific IP address and IP mask
         net1:
           ipv4:
             address: "10.0.0.1/24"
-            gateway: "10.0.0.254"
+            gateway: "10.0.0.254"                     # (optional) When static address is used for "address" part, this is where you define the default gateway.
     - hostname: ct-test-2
       vm_id: 110
       started: false
-      tags: ["pcs", "pc-2"]
+      tags: [ "pcs", "pc-2" ]
       datastore_id: local-lvm
       template_file_id: local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst
       type: ubuntu
-      nics: # Definition of network interfaces.
-        net0: # The name of the network interfaces is irrelevant here, but the order defines PVE network interfaces IDs
+      nics:
+        net0:
           name: eth0
-          network: vmbr0 # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
-          vlan_id: 0 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+          network: vmbr0
+          vlan_id: 0
         net1:
           name: eth1
-          network: temp # Defines PVE bridge name. It must already exist in PVE and be of VLAN aware type.
-          vlan_id: 12 # If the number is provided in the range of 2-4094, it will be used as VLAN tag for any outgoing and incoming traffic on this NIC. vlan_id=0 will configure trunk inetrface.
+          network: temp
+          vlan_id: 12
       ip_configs:
         net0:
           ipv4:

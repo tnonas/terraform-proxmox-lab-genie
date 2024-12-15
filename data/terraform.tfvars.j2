@@ -22,15 +22,15 @@ virtual_machines = {
     vm_id           = {{ vm["id"] }}
     started         = false
     on_boot         = false
-    stop_on_destroy = false # Whether to stop instead of shutdown during tf destroy
-    pool_id         = "{{ lab["name"] }}" # If the ID does not exist it will be created
+    stop_on_destroy = false
+    pool_id         = "{{ lab["name"] }}"
     {% set all_tags = lab["tags"] + vm["tags"] -%}
-    tags            = {{ all_tags | tojson }} # | tojson is used to preserve double quotes
-    # hook_script_file_id = "" # Hookscript filename
+    tags            = {{ all_tags | tojson }} # | tojson is used to preserve double quotes when converting from YAML
+    # hook_script_file_id = ""
     network_devices = {
       {%- for key, value in vm["nics"].items() %}
       {{ key }} = {
-        bridge       = "{{ value["network"] }}" # Bridge ID must already exist
+        bridge       = "{{ value["network"] }}"
         disconnected = false
         vlan_id      = {{ value["vlan_id"] }}
       }
@@ -49,7 +49,7 @@ containers = {
     password         = "{{ lab["container_password"] }}"
     vm_id            = {{ container["vm_id"] }}
     started          = false
-    start_on_boot  = false
+    start_on_boot    = false
     pool_id          = "{{ lab["name"] }}"
     {% set all_tags = lab["tags"] + container["tags"] -%}
     tags = {{ all_tags | tojson }}
@@ -60,7 +60,7 @@ containers = {
       {%- for key, value in container["nics"].items() %}
       {{ key }} = {
         name         = "{{ value["name"] }}"
-        bridge       = "{{ value["network"] }}" # Bridge ID must already exist
+        bridge       = "{{ value["network"] }}"
         enabled      = true
         vlan_id      = {{ value["vlan_id"] }}
       }
